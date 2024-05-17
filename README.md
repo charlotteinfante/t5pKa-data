@@ -1,1 +1,1 @@
-# Generate pK_{a} Dataset for Model Training
+# Generate pKa Dataset for Model Training
