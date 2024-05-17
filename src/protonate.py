@@ -169,7 +169,7 @@ def protonate_mol(smi, ph, tph):
 
 if __name__=="__main__":
     smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
-    pt_smis= protonate_mol(smi, ph=7.4, tph=2.5)
+    pt_smis= protonate_mol(smi, ph=7.4, tph=0.5)
     breakpoint()
     print(pt_smis)
     print(smile_info)
