@@ -1,3 +1,6 @@
+'''
+originally sourced from https://github.com/Xundrug/MolTaut/blob/master/moltaut_src/molgpka/protonate.py
+'''
 from predict_pka import predict
 from copy import deepcopy
 from rdkit import Chem
