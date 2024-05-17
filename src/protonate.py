@@ -172,7 +172,7 @@ if __name__=="__main__":
     pt_smis= protonate_mol(smi, ph=7.4, tph=2.5)
     breakpoint()
     print(pt_smis)
-    #print(smile_info)
+    print(smile_info)
 
    
 
