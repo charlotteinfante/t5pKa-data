@@ -185,10 +185,8 @@ def ionize_mol(smi, ph, tph):
                 # returns [[mol_object,pka]]
                 stable_smi.append(smi)
             y = i + 1
+# to do stable_base, unstable_base and unstable_acid
 
-        modify_stable_pka(new_mol, stable_data)
-        smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-        stable_smi.append(smi)
     #elif len(unstable_data) > 0:
 
 
