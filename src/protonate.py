@@ -61,8 +61,8 @@ def get_pKa_data(mol, ph, tph):
         Returns: two lists 
     '''
     stable_data, unstable_data = [], []
-    stable_data_acid, unstable_data_acid = [], []
-    stable_data_base, unstable_data_base = [], []
+    stable_acid, unstable_acid = [], []
+    stable_base, unstable_base = [], []
     for at in mol.GetAtoms():
         props = at.GetPropsAsDict()
         acid_or_basic = props.get('ionization', False)
@@ -73,21 +73,21 @@ def get_pKa_data(mol, ph, tph):
             # and if pKa is less than pH, then add index of atom, pKa, and type to stable list to be deprotonated
             if pKa <= ph:
                 stable_data.append( [idx, pKa, "A"] )
-                stable_data_acid.append( [idx, pKa, "A"] )
+                stable_acid.append( [idx, pKa, "A"] )
             # if pKa is more than pH, then add index of atom, pKa, and type to unstable list
             else:
                 unstable_data.append( [idx, pKa, "A"] )
-                unstable_data_acid.append( [idx, pKa, "A"] )
+                unstable_acid.append( [idx, pKa, "A"] )
         # if property of atom is basic 
         elif acid_or_basic == "B":
             # and if pKa is more than pH, then add index of atom, pKa, and type to stable list to be protonated
             if pKa >= ph:
                 stable_data.append( [idx, pKa, "B"] )
-                stable_data_base.append( [idx, pKa, "B"] )
+                stable_base.append( [idx, pKa, "B"] )
             else:
                 unstable_data.append( [idx, pKa, "B"] )
-                unstable_data_base.append( [idx, pKa, "B"] )
-    return stable_data_acid, unstable_data_acid, stable_data_base, unstable_data_base, stable_data, unstable_data
+                unstable_base.append( [idx, pKa, "B"] )
+    return stable_acid, unstable_acid, stable_base, unstable_base, stable_data, unstable_data
 
 def modify_acid(at):
     '''
@@ -108,7 +108,6 @@ def modify_base(at):
     return
 
 def modify_stable_pka(new_mol, stable_data):
-    breakpoint()
     new_unsmis = []
     for pka_data in stable_data:
         idx, pka, acid_or_basic = pka_data
@@ -120,7 +119,7 @@ def modify_stable_pka(new_mol, stable_data):
             # protonate atom
             modify_base(at)
         smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-        new_unsmis.append([smi, pka])
+        new_unsmis.append(smi)
     return new_unsmis
 
 def modify_unstable_pka(mol, unstable_data, i):
@@ -128,7 +127,6 @@ def modify_unstable_pka(mol, unstable_data, i):
     If the molecule is an acid and has a pKa more than pH, then it is considered unstable.
     If the molecule is a base and has a pKa less than pH, then it is considered unstable.
     '''
-    breakpoint()
     combine_pka_datas = list(combinations(unstable_data, i))
     new_unsmis = []
     for pka_datas in combine_pka_datas:
@@ -145,53 +143,73 @@ def modify_unstable_pka(mol, unstable_data, i):
             elif acid_or_basic == "B":
                 modify_base(at)
         smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-        new_unsmis.append([smi, pka])
+        new_unsmis.append(smi)
     return new_unsmis
 
 def ionize_mol(smi, ph, tph):
     # make smiles into object to be read by rdkit
+    breakpoint()
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
     obase_dict, oacid_dict, omol = predict(omol)
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
     # separate the prediction based on stability of ionization
-    stable_acid, unstable_acid, stable_base, unstable_acid = get_pKa_data(mc, ph, tph)
-    stable_smi, unstable_smi = [],[]
+    stable_acid, unstable_acid, stable_base, unstable_base, stable_data, unstable_data= get_pKa_data(mc, ph, tph)
+    # stable_data follows chem rules, all pKas should be smaller than pH (acid), all pKas should be larger than pH (base)
+    # rearrange stable_acid with smallest pKa value being first
+    stable_acid.sort(key=lambda stable_acid: stable_acid[1])
+    # rearrange unstable_acid with smallest pKa value being first
+    # these are unlikely to be deprotonated, but value closest to pH is closest to 50% deprotonated
+    unstable_acid.sort(key=lambda unstable_acid: unstable_acid[1])
+    # rearramge stable_base with biggest pKa value being first
+    stable_base.sort(key=lambda stable_base: stable_base[1], reverse=True)
+    unstable_base.sort(key=lambda unstable_base: unstable_base[1], reverse=True)
+
+    y = 0
+    stable_asmi, stable_bsmi = [],[]
+    unstable_asmi, unstable_bsmi = [], []
     if len(stable_acid) > 0:
-        # stable_data follows chem rules, all pKas should be smaller than pH (acid), all pKas should be larger than pH (base)
-        # rearrange stable_acid with smallest pKa value being first
-        stable_acid.sort(key=lambda stable_acid: stable_acid[1])
-        # rearrange unstable_acid with smallest pKa value being first
-        # these are unlikely to be deprotonated, but value closest to pH is closest to 50% deprotonated
-        unstable_acid.sort(key=lambda unstable_acid: unstable_acid[1])
-        # rearramge stable_base with biggest pKa value being first
-        stable_base.sort(key=lambda stable_base: stable_base[1], reverse=True)
-        unstable_base.sort(key=lambda unstable_base: unxstable_base[1], reverse=True)
-        y = 0
         for i in range(len(stable_acid)):
             if i == 0:
                  new_mol = deepcopy(mc)
-                 modify_stable_pka(new_mol, stable_acid[i])
-                 smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-                 # returns [[mol_object,pka]]
-                 stable_smi.append(smi)
+                 modify_stable_pka(new_mol, [stable_acid[i]])
+                 smi = Chem.MolToSmiles(new_mol, canonical=True)
+                 stable_asmi.append([Chem.MolToSmiles(mc, canonical=True),smi, stable_acid[i][1]])
             elif i == y:
-                deprot_mol = Chem.MolFromSmiles(stable_smi[i-1][0])
+                # get the last deprotonated molecule 
+                deprot_mol = Chem.MolFromSmiles(stable_asmi[i-1][1])
+                # modify deprot molecule to be used in modify_stable_pka function
                 mod_deprot_mol = modify_mol(deprot_mol, oacid_dict, obase_dict)
                 copy_mol = deepcopy(mod_deprot_mol)
                 modify_stable_pka(copy_mol, [stable_acid[i]])
-                smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-                # returns [[mol_object,pka]]
-                stable_smi.append(smi)
+                smi = Chem.MolToSmiles(copy_mol, canonical=True)
+                stable_asmi.append([stable_asmi[i-1][0],smi, stable_acid[i][1]])
             y = i + 1
+    if len(stable_base) > 0:
+        for i in range(len(stable_base)):
+            if i == 0:
+                new_mol = deepcopy(mc)
+                modify_stable_pka(new_mol, [stable_base[i]])
+                smi = Chem.MolToSmiles(new_mol, canonical=True)
+                stable_bsmi.append([Chem.MolToSmiles(mc, canonical=True),smi, stable_base[i][1]])
+            elif i == y:
+                prot_mol = Chem.MolFromSmiles(stable_bsmi[i-1][1])
+                mod_prot_mol = modify_mol(prot_mol, oacid_dict, obase_dict)
+                copy_mol = deepcopy(mod_prot_mol)
+                modify_stable_pka(copy_mol, [stable_base[i]])
+                smi = Chem.MolToSmiles(copy_mol, canonical=True)
+                stable_bsmi.append([Chem.MolToSmiles(prot_mol, canonical=True), smi, stable_base[i][1]])
+            y = i + 1
+
+
+        return stable_asmi, stable_bsmi
 # to do stable_base, unstable_base and unstable_acid
 
     #elif len(unstable_data) > 0:
 
 
 def protonate_mol(smi, ph, tph):
-    breakpoint()
     # make smiles into object to be read by rdkit
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
@@ -219,10 +237,11 @@ def protonate_mol(smi, ph, tph):
 
 if __name__=="__main__":
     smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
-    pt_smis= protonate_mol(smi, ph=7.4, tph=2.5)
-    breakpoint()
-    print(pt_smis)
-    #print(smile_info)
+    #pt_smis= protonate_mol(smi, ph=7.4, tph=2.5)
+    stable_asmi, stable_bsmi= ionize_mol(smi, ph=1, tph=2.5)
+    print(stable_asmi)
+    print(stable_bsmi)
+    #print(pt_smis)
 
    
 
