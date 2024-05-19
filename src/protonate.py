@@ -191,7 +191,7 @@ def ionize_mol(smi, ph, tph):
         stable_asmi = enumerate_ionization(mc, stable_acid, oacid_dict, obase_dict)
     if len(stable_base) > 0:
         stable_bsmi = enumerate_ionization(mc, stable_base, oacid_dict, obase_dict)
-        return stable_asmi, stable_bsmi
+    return stable_asmi, stable_bsmi
 # to do unstable_base and unstable_acid
 
     #elif len(unstable_data) > 0:
