@@ -55,7 +55,7 @@ def modify_mol(mol, acid_dict, base_dict):
     nmol = AllChem.RemoveHs(mol)
     return nmol
 
-def get_pKa_data(mol, ph, tph):
+def get_pKa_data(mol, ph):
     '''
     Separates the ionizable atom as either stable or unstable based on pKa and given pH
         Returns: two lists 
@@ -165,8 +165,7 @@ def enumerate_ionization(mol, stable_data, acid_dict, base_dict):
             stable_smi.append([Chem.MolToSmiles(ionized_mol, canonical=True),smi, stable_data[i][1]])
     return stable_smi
 
-def ionize_mol(smi, ph, tph):
-    # make smiles into object to be read by rdkit
+def ionize_mol(smi, ph):
     breakpoint()
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
@@ -174,30 +173,30 @@ def ionize_mol(smi, ph, tph):
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
     # separate the prediction based on stability of ionization
-    stable_acid, unstable_acid, stable_base, unstable_base, stable_data, unstable_data= get_pKa_data(mc, ph, tph)
+    stable_acid, unstable_acid, stable_base, unstable_base, stable_data, unstable_data= get_pKa_data(mc, ph)
+
     # stable_data follows chem rules, all pKas should be smaller than pH (acid), all pKas should be larger than pH (base)
     # rearrange stable_acid with smallest pKa value being first
     stable_acid.sort(key=lambda stable_acid: stable_acid[1])
     # rearrange unstable_acid with smallest pKa value being first
     # these are unlikely to be deprotonated, but value closest to pH is closest to 50% deprotonated
     unstable_acid.sort(key=lambda unstable_acid: unstable_acid[1])
+
     # rearramge stable_base with biggest pKa value being first
     stable_base.sort(key=lambda stable_base: stable_base[1], reverse=True)
     unstable_base.sort(key=lambda unstable_base: unstable_base[1], reverse=True)
 
-    stable_asmi, stable_bsmi = [],[]
-    unstable_asmi, unstable_bsmi = [], []
-    if len(stable_acid) > 0:
-        stable_asmi = enumerate_ionization(mc, stable_acid, oacid_dict, obase_dict)
-    if len(stable_base) > 0:
-        stable_bsmi = enumerate_ionization(mc, stable_base, oacid_dict, obase_dict)
-    return stable_asmi, stable_bsmi
-# to do unstable_base and unstable_acid
+    stable_smi, unstable_smi = [],[]
+    if len(stable_data) > 0:
+        stable_smi = enumerate_ionization(mc, stable_data, oacid_dict, obase_dict)
+    if len(unstable_data) > 0:
+        unstable_smi = enumerate_ionization(mc, unstable_data, oacid_dict, obase_dict)
 
-    #elif len(unstable_data) > 0:
+    return stable_smi, unstable_smi
 
 
-def protonate_mol(smi, ph, tph):
+
+def protonate_mol(smi, ph):
     '''
     Ionization of all possible sites for a molecule given.
         Returns: 
@@ -231,11 +230,8 @@ def protonate_mol(smi, ph, tph):
 
 if __name__=="__main__":
     smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
-    #pt_smis= protonate_mol(smi, ph=7.4, tph=2.5)
-    stable_asmi, stable_bsmi= ionize_mol(smi, ph=1, tph=2.5)
-    print(stable_asmi)
-    print(stable_bsmi)
-    #print(pt_smis)
+    stable_smi, unstable_smi= ionize_mol(smi, ph=7.4)
+
 
    
 
