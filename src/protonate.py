@@ -146,6 +146,25 @@ def modify_unstable_pka(mol, unstable_data, i):
         new_unsmis.append(smi)
     return new_unsmis
 
+def enumerate_ionization(mol, stable_data, acid_dict, base_dict):
+    stable_smi = []
+    for i in range(len(stable_data)):
+        if i == 0:
+            new_mol = deepcopy(mol)
+            modify_stable_pka(new_mol, [stable_data[i]])
+            smi = Chem.MolToSmiles(new_mol, canonical=True)
+            stable_smi.append([Chem.MolToSmiles(mol, canonical=True),smi, stable_data[i][1]])
+        else:
+            # get the last ionized molecule 
+            ionized_mol = Chem.MolFromSmiles(stable_smi[i-1][1])
+            # modify deprot molecule to be used in modify_stable_pka function
+            mod_ionized_mol = modify_mol(ionized_mol, acid_dict, base_dict)
+            copy_mol = deepcopy(mod_ionized_mol)
+            modify_stable_pka(copy_mol, [stable_data[i]])
+            smi = Chem.MolToSmiles(copy_mol, canonical=True)
+            stable_smi.append([Chem.MolToSmiles(ionized_mol, canonical=True),smi, stable_data[i][1]])
+    return stable_smi
+
 def ionize_mol(smi, ph, tph):
     # make smiles into object to be read by rdkit
     breakpoint()
@@ -166,50 +185,25 @@ def ionize_mol(smi, ph, tph):
     stable_base.sort(key=lambda stable_base: stable_base[1], reverse=True)
     unstable_base.sort(key=lambda unstable_base: unstable_base[1], reverse=True)
 
-    y = 0
     stable_asmi, stable_bsmi = [],[]
     unstable_asmi, unstable_bsmi = [], []
     if len(stable_acid) > 0:
-        for i in range(len(stable_acid)):
-            if i == 0:
-                 new_mol = deepcopy(mc)
-                 modify_stable_pka(new_mol, [stable_acid[i]])
-                 smi = Chem.MolToSmiles(new_mol, canonical=True)
-                 stable_asmi.append([Chem.MolToSmiles(mc, canonical=True),smi, stable_acid[i][1]])
-            elif i == y:
-                # get the last deprotonated molecule 
-                deprot_mol = Chem.MolFromSmiles(stable_asmi[i-1][1])
-                # modify deprot molecule to be used in modify_stable_pka function
-                mod_deprot_mol = modify_mol(deprot_mol, oacid_dict, obase_dict)
-                copy_mol = deepcopy(mod_deprot_mol)
-                modify_stable_pka(copy_mol, [stable_acid[i]])
-                smi = Chem.MolToSmiles(copy_mol, canonical=True)
-                stable_asmi.append([stable_asmi[i-1][0],smi, stable_acid[i][1]])
-            y = i + 1
+        stable_asmi = enumerate_ionization(mc, stable_acid, oacid_dict, obase_dict)
     if len(stable_base) > 0:
-        for i in range(len(stable_base)):
-            if i == 0:
-                new_mol = deepcopy(mc)
-                modify_stable_pka(new_mol, [stable_base[i]])
-                smi = Chem.MolToSmiles(new_mol, canonical=True)
-                stable_bsmi.append([Chem.MolToSmiles(mc, canonical=True),smi, stable_base[i][1]])
-            elif i == y:
-                prot_mol = Chem.MolFromSmiles(stable_bsmi[i-1][1])
-                mod_prot_mol = modify_mol(prot_mol, oacid_dict, obase_dict)
-                copy_mol = deepcopy(mod_prot_mol)
-                modify_stable_pka(copy_mol, [stable_base[i]])
-                smi = Chem.MolToSmiles(copy_mol, canonical=True)
-                stable_bsmi.append([Chem.MolToSmiles(prot_mol, canonical=True), smi, stable_base[i][1]])
-            y = i + 1
-
-
+        stable_bsmi = enumerate_ionization(mc, stable_base, oacid_dict, obase_dict)
         return stable_asmi, stable_bsmi
-# to do stable_base, unstable_base and unstable_acid
+# to do unstable_base and unstable_acid
 
     #elif len(unstable_data) > 0:
 
 
 def protonate_mol(smi, ph, tph):
+    '''
+    Ionization of all possible sites for a molecule given.
+        Returns: 
+            new_smis: list of ionized smiles
+                (type: list)
+    '''
     # make smiles into object to be read by rdkit
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
