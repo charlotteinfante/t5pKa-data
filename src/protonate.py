@@ -92,7 +92,6 @@ def modify_acid(at):
     '''
     Deprotonates atom
     '''
-    breakpoint()
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(-1)
     at.SetNumExplicitHs(hnum-1)
@@ -225,25 +224,36 @@ def load_data(path):
     stable_smi, unstable_smi = [], []
     for i in data['smiles']:
         stable, unstable = ionize_mol(i, ph=7.4)
-        breakpoint()
         stable_smi.append(stable)
         unstable_smi.append(unstable)
     return stable_smi, unstable_smi
 
-def save_for_t5chem(stable_smi, unstable_smi, stable_only)
+def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
+    micropka_source = open(str(path)+'micropka_train.source', 'w')
+    micropka_target = open(str(path)+'micropka_train.target', 'w')
+    seq2seq_source = open(str(path)+'seq2seq_train.source', 'w')
+    seq2seq_target = open(str(path)+'seq2seq_train.target', 'w')
+
     if stable_only == False:
         all_data = stable_smi + unstable_smi
     else:
         all_data = stable_only
-    
+    data = [item for sublist in all_data for item in sublist if sublist]
+    for i in data:
+        first_mol, second_mol, pka = i 
+        print(first_mol+'>>'+second_mol, file=micropka_source)
+        print(pka, file=micropka_target)
+        print(first_mol, file=seq2seq_source)
+        print(second_mol, file=seq2seq_target)
+    micropka_source.close()
+    micropka_target.close()
+    seq2seq_source.close()
+    seq2seq_target.close()
+
 
 if __name__=="__main__":
     x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
-    #smi = "CC(C)[C@H]1C(=O)Nc2ccc(NCCN3CCCCC3)cc2-c2nc3cc(C(=O)N4CCN(c5ccc(F)cc5)CC4)ccc3n21"
-    #smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
-    stable_smi, unstable_smi= ionize_mol(smi, ph=7.4)
-    #pt = protonate_mol(smi,ph=7.4)
-    #print(pt)
+    save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
 
 
    
