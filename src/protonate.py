@@ -4,8 +4,7 @@ originally sourced from https://github.com/Xundrug/MolTaut/blob/master/moltaut_s
 from predict_pka import predict
 from copy import deepcopy
 from rdkit import Chem
-
-from rdkit import Chem
+import pandas as pd
 from rdkit.Chem import AllChem,Draw
 from rdkit import RDLogger
 RDLogger.DisableLog('rdApp.*')
@@ -93,6 +92,7 @@ def modify_acid(at):
     '''
     Deprotonates atom
     '''
+    breakpoint()
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(-1)
     at.SetNumExplicitHs(hnum-1)
@@ -110,6 +110,8 @@ def modify_base(at):
 def modify_stable_pka(new_mol, stable_data):
     new_unsmis = []
     for pka_data in stable_data:
+        copy_mol = copy.deepcopy(new_mol)
+        original_smiles = Chem.MolToSmiles(copy_mol, canonical=True)
         idx, pka, acid_or_basic = pka_data
         at = new_mol.GetAtomWithIdx(idx)
         if acid_or_basic == "A":
@@ -119,7 +121,7 @@ def modify_stable_pka(new_mol, stable_data):
             # protonate atom
             modify_base(at)
         smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-        new_unsmis.append(smi)
+        new_unsmis.append([original_smiles,smi, pka])
     return new_unsmis
 
 def modify_unstable_pka(mol, unstable_data, i):
@@ -146,27 +148,7 @@ def modify_unstable_pka(mol, unstable_data, i):
         new_unsmis.append(smi)
     return new_unsmis
 
-def enumerate_ionization(mol, stable_data, acid_dict, base_dict):
-    stable_smi = []
-    for i in range(len(stable_data)):
-        if i == 0:
-            new_mol = deepcopy(mol)
-            modify_stable_pka(new_mol, [stable_data[i]])
-            smi = Chem.MolToSmiles(new_mol, canonical=True)
-            stable_smi.append([Chem.MolToSmiles(mol, canonical=True),smi, stable_data[i][1]])
-        else:
-            # get the last ionized molecule 
-            ionized_mol = Chem.MolFromSmiles(stable_smi[i-1][1])
-            # modify deprot molecule to be used in modify_stable_pka function
-            mod_ionized_mol = modify_mol(ionized_mol, acid_dict, base_dict)
-            copy_mol = deepcopy(mod_ionized_mol)
-            modify_stable_pka(copy_mol, [stable_data[i]])
-            smi = Chem.MolToSmiles(copy_mol, canonical=True)
-            stable_smi.append([Chem.MolToSmiles(ionized_mol, canonical=True),smi, stable_data[i][1]])
-    return stable_smi
-
 def ionize_mol(smi, ph):
-    breakpoint()
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
     obase_dict, oacid_dict, omol = predict(omol)
@@ -186,15 +168,21 @@ def ionize_mol(smi, ph):
     stable_base.sort(key=lambda stable_base: stable_base[1], reverse=True)
     unstable_base.sort(key=lambda unstable_base: unstable_base[1], reverse=True)
 
-    stable_smi, unstable_smi = [],[]
-    if len(stable_data) > 0:
-        stable_smi = enumerate_ionization(mc, stable_data, oacid_dict, obase_dict)
-    if len(unstable_data) > 0:
-        unstable_smi = enumerate_ionization(mc, unstable_data, oacid_dict, obase_dict)
+    stable_asmi, unstable_asmi = [],[]
+    stable_bsmi, unstable_bsmi = [],[]
+    if len(stable_acid) > 0:
+        stable_asmi = modify_stable_pka(mc, stable_acid)
+    if len(stable_base) > 0:
+        stable_bsmi = modify_stable_pka(mc, stable_base)
+    if len(unstable_acid) > 0:
+        unstable_asmi = modify_stable_pka(mc, unstable_acid)
+    if len(unstable_base) > 0:
+        unstable_bsmi = modify_stable_pka(mc, unstable_base)
+    
+    stable_smi = stable_asmi + stable_bsmi
+    unstable_smi = unstable_asmi + unstable_bsmi
 
     return stable_smi, unstable_smi
-
-
 
 def protonate_mol(smi, ph):
     '''
@@ -209,17 +197,19 @@ def protonate_mol(smi, ph):
     obase_dict, oacid_dict, omol = predict(omol)
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
-    _,_,_x,_y,stable_data, unstable_data = get_pKa_data(mc, ph, tph)
+    _,_,_x,_y,stable_data, unstable_data = get_pKa_data(mc, ph)
     new_smis = []
     n = len(unstable_data)
-    # if based on pKa and pH rules, the deprotonated or protonated state is viable, then its in stable_data
+    # if based on pKa and pH rules, the deprotonated or protonated state is viable, then use stable_data only
     if n == 0:
         new_mol = deepcopy(mc)
         modify_stable_pka(new_mol, stable_data)
         smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
         new_smis.append(smi)
+    # else use molecules in unstable_data
     else:
         for i in range(n + 1):
+            # use molecules in stable_data if available
             new_mol = deepcopy(mc)
             modify_stable_pka(new_mol, stable_data)
             if i == 0:
@@ -228,9 +218,32 @@ def protonate_mol(smi, ph):
             new_smis.extend(new_unsmis)
     return new_smis
 
+def load_data(path):
+    data = pd.read_csv(path, names=['source'])
+    data = data[:4]
+    data[['prefix','smiles']] = data['source'].str.split(':',expand=True)
+    stable_smi, unstable_smi = [], []
+    for i in data['smiles']:
+        stable, unstable = ionize_mol(i, ph=7.4)
+        breakpoint()
+        stable_smi.append(stable)
+        unstable_smi.append(unstable)
+    return stable_smi, unstable_smi
+
+def save_for_t5chem(stable_smi, unstable_smi, stable_only)
+    if stable_only == False:
+        all_data = stable_smi + unstable_smi
+    else:
+        all_data = stable_only
+    
+
 if __name__=="__main__":
-    smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
+    x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
+    #smi = "CC(C)[C@H]1C(=O)Nc2ccc(NCCN3CCCCC3)cc2-c2nc3cc(C(=O)N4CCN(c5ccc(F)cc5)CC4)ccc3n21"
+    #smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
     stable_smi, unstable_smi= ionize_mol(smi, ph=7.4)
+    #pt = protonate_mol(smi,ph=7.4)
+    #print(pt)
 
 
    
