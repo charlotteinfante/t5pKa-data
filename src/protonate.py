@@ -252,7 +252,7 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
 
 
 if __name__=="__main__":
-    x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
+    x,y = load_data('datasets/train.source')
     save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
 
 
