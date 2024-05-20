@@ -1,0 +1,7 @@
+acidic:CC(C)[C@H]1C(=O)Nc2ccc(NCCN3CCCCC3)cc2-c2nc3cc(C(=O)N4CCN(c5ccc(F)cc5)CC4)ccc3n21
+acidic:CCCC[C@H]1CC[C@H](c2ccc(NC(=S)Nc3cccc(C(F)(F)F)c3)cc2)CC1
+basic:CC[C@@H]1CN2CC[C@@H]1C[C@H]2[C@H](O)c1ccnc2ccc(OCCC(C)C)cc12
+acidic:CC(N=C(S)N1CCN(c2ccccc2)CC1)c1ccccc1
+basic:CC(C)C[C@H](NC(=O)CCCc1ccccc1)C(=O)N[C@@H](Cc1ccccc1)C(=O)N[C@@H](CCCNC(=N)N)C(=O)N1CCC[C@H]1C(=O)N[C@@H](CCCNC(=N)N)C(=O)N[C@@H](CC(N)=O)C(N)=O
+acidic:CNC(=O)c1cc(-c2ncc(OC)c3c(C(=O)C(=O)N4CCc5c(cccc5-c5ccccn5)C4)c[nH]c23)n[nH]1
+basic:CC(O)c1c(O)c(=O)ccn1CCCCCCOC(=O)CCC(=O)CN
