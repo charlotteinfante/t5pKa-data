@@ -290,18 +290,9 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
 
 
 if __name__=="__main__":
-<<<<<<< HEAD
-    smi = "Nc1cc(C(F)(F)F)c(-c2cc(N3CCCC3)nc(N3CCOCC3)n2)cn1"
-    smi = "C[NH2+]CC1CN(c2nc(-c3cnc(CC(=O)[O-])cc3C(F)(F)F)cc(N3CC[NH2+]C3)n2)CCO1"
-    pt_smis= protonate_mol(smi, ph=7.4, tph=0.0)
-    # breakpoint()
-    print(pt_smis)
-    print(smile_info)
-=======
     x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
     save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
 
->>>>>>> dev
 
    
 
