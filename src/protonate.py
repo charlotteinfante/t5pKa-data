@@ -57,7 +57,14 @@ def modify_mol(mol, acid_dict, base_dict):
 def get_pKa_data(mol, ph):
     '''
     Separates the ionizable atom as either stable or unstable based on pKa and given pH
-        Returns: two lists 
+        mol: rdkit molecule object
+        ph: pH given 
+            (type: str)
+        Returns: six lists. The first list contains most likely to be deprotonated molecules (acids), 
+        the second list contains not as likely to deprotonate (acids), the third list contains most likely to be 
+        protonated molecules (bases), the fourth list contains not as likely to protoonate molecules (bases), the 
+        fifth list contains all most likely to be ionized molecules (acids and bases), the last list contains the 
+        less likely to be ionized molecules (acids and bases). 
     '''
     stable_data, unstable_data = [], []
     stable_acid, unstable_acid = [], []
@@ -91,6 +98,9 @@ def get_pKa_data(mol, ph):
 def modify_acid(at):
     '''
     Deprotonates atom
+        at: atom of interest that will be ionized
+            (type: rdkit object)
+        Returns: ionized rdkit molecule 
     '''
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(-1)
@@ -100,6 +110,9 @@ def modify_acid(at):
 def modify_base(at):
     '''
     Protonates atom
+        at: atom of interest that will be ionized
+            (type: rdkit object)
+        Returns: ionized rdkit molecule 
     '''
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(1)
@@ -107,6 +120,15 @@ def modify_base(at):
     return
 
 def modify_stable_pka(new_mol, stable_data):
+    '''
+    Protonate or deprotonate a molecule.
+        new_mol: molecule of interest
+            (rdkit molecule object)
+        stable_data: use a list from get_pKa_data function
+            (type: list)
+        Returns: a list of the ionization of the molecule 
+            [[first_mol,ionized_mol1,pka1],[ionized_mol1,ionized_mol2,pka2]]
+    '''
     new_unsmis = []
     for pka_data in stable_data:
         copy_mol = copy.deepcopy(new_mol)
@@ -119,7 +141,7 @@ def modify_stable_pka(new_mol, stable_data):
         elif acid_or_basic == "B":
             # protonate atom
             modify_base(at)
-        smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
+        smi = Chem.MolToSmiles(new_mol, canonical=True)
         new_unsmis.append([original_smiles,smi, pka])
     return new_unsmis
 
@@ -218,9 +240,15 @@ def protonate_mol(smi, ph):
     return new_smis
 
 def load_data(path):
-    data = pd.read_csv(path, names=['source'])
-    data = data[:4]
-    data[['prefix','smiles']] = data['source'].str.split(':',expand=True)
+    '''
+    Load in any smiles file to have MolGpKa predict pKa and output ionized molecule(s).
+        path: path to where the file is located
+            (type: str)
+        Returns: two lists (stable_smi and unstable_smi)
+    '''
+    data = pd.read_csv(path, names=['smiles'])
+    if data['smiles'].str.contains('acidic:|basic:').any():
+        data[['prefix','smiles']] = data['smiles'].str.split(':',expand=True)
     stable_smi, unstable_smi = [], []
     for i in data['smiles']:
         stable, unstable = ionize_mol(i, ph=7.4)
@@ -229,6 +257,16 @@ def load_data(path):
     return stable_smi, unstable_smi
 
 def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
+    '''
+    Organize the output from load_data or ionize_mol in a suitable format for T5Chem-pKa.
+        stable_smi: stable molecules containing [base_molecule, ionized molecule, pka]
+            (type: list)
+        unstable_smi: unstable molecules containing [base_molecule, ionized molecule, pka]
+            (type: list)
+        path: path to where you want to have the made files in
+            (type: str)
+        Returns: 4 files (two source files, two target files)
+    '''
     micropka_source = open(str(path)+'micropka_train.source', 'w')
     micropka_target = open(str(path)+'micropka_train.target', 'w')
     seq2seq_source = open(str(path)+'seq2seq_train.source', 'w')
@@ -252,7 +290,7 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
 
 
 if __name__=="__main__":
-    x,y = load_data('datasets/train.source')
+    x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
     save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
 
 
