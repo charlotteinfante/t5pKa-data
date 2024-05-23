@@ -175,7 +175,7 @@ def modify_unstable_pka(mol, unstable_data, i):
                 new_unsmis.append(smi)
             except (OverflowError, ValueError) as e:
                 continue
-        
+                
     return new_unsmis
 
 def ionize_mol(smi, ph):
