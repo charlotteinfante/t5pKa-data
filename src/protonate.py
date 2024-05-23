@@ -105,7 +105,7 @@ def modify_acid(at):
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(-1)
     at.SetNumExplicitHs(hnum-1)
-    return
+    return 
 
 def modify_base(at):
     '''
@@ -117,7 +117,7 @@ def modify_base(at):
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(1)
     at.SetNumExplicitHs(hnum+1)
-    return
+    return 
 
 def modify_stable_pka(new_mol, stable_data):
     '''
@@ -129,26 +129,31 @@ def modify_stable_pka(new_mol, stable_data):
         Returns: a list of the ionization of the molecule 
             [[first_mol,ionized_mol1,pka1],[ionized_mol1,ionized_mol2,pka2]]
     '''
-    new_unsmis = []
+    new_smis = []
     for pka_data in stable_data:
+        idx, pka, acid_or_basic = pka_data
         copy_mol = copy.deepcopy(new_mol)
         original_smiles = Chem.MolToSmiles(copy_mol, canonical=True)
-        idx, pka, acid_or_basic = pka_data
         at = new_mol.GetAtomWithIdx(idx)
-        if acid_or_basic == "A":
-            # deprotonate atom
-            modify_acid(at)
-        elif acid_or_basic == "B":
-            # protonate atom
-            modify_base(at)
-        smi = Chem.MolToSmiles(new_mol, canonical=True)
-        new_unsmis.append([original_smiles,smi, pka])
-    return new_unsmis
+        try:
+            if acid_or_basic == "A":
+                # deprotonate atom
+                modify_acid(at)
+            elif acid_or_basic == "B":
+                # protonate atom
+                modify_base(at)
+            smi = Chem.MolToSmiles(new_mol, canonical=True)
+            new_smis.append([original_smiles,smi, pka])
+        # if this error occurs molecule most likely invalid, so just skip and continue
+        except (OverflowError, ValueError) as e:
+            continue
+    return new_smis
 
 def modify_unstable_pka(mol, unstable_data, i):
     '''
     If the molecule is an acid and has a pKa more than pH, then it is considered unstable.
     If the molecule is a base and has a pKa less than pH, then it is considered unstable.
+    This function is only used in protonate_mol function.
     '''
     combine_pka_datas = list(combinations(unstable_data, i))
     new_unsmis = []
@@ -161,20 +166,29 @@ def modify_unstable_pka(mol, unstable_data, i):
             # pka_data example [25, 5.3894997, 'B']
             idx, pka, acid_or_basic = pka_data
             at = new_mol.GetAtomWithIdx(idx)
-            if acid_or_basic == "A":
-                modify_acid(at)
-            elif acid_or_basic == "B":
-                modify_base(at)
-        smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
-        new_unsmis.append(smi)
+            try:
+                if acid_or_basic == "A":
+                    modify_acid(at)
+                elif acid_or_basic == "B":
+                    modify_base(at)
+                smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
+                new_unsmis.append(smi)
+            except (OverflowError, ValueError) as e:
+                continue      
     return new_unsmis
 
 def ionize_mol(smi, ph):
+    print(smi)
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
     obase_dict, oacid_dict, omol = predict(omol)
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
+
+    # separates the modifications between acidic and basic when used in modify_stable_pka()
+    amol = deepcopy(mc)
+    bmol = deepcopy(mc)
+
     # separate the prediction based on stability of ionization
     stable_acid, unstable_acid, stable_base, unstable_base, stable_data, unstable_data= get_pKa_data(mc, ph)
 
@@ -192,13 +206,13 @@ def ionize_mol(smi, ph):
     stable_asmi, unstable_asmi = [],[]
     stable_bsmi, unstable_bsmi = [],[]
     if len(stable_acid) > 0:
-        stable_asmi = modify_stable_pka(mc, stable_acid)
-    if len(stable_base) > 0:
-        stable_bsmi = modify_stable_pka(mc, stable_base)
+        stable_asmi = modify_stable_pka(amol, stable_acid)
     if len(unstable_acid) > 0:
-        unstable_asmi = modify_stable_pka(mc, unstable_acid)
+        unstable_asmi = modify_stable_pka(amol, unstable_acid)
+    if len(stable_base) > 0:
+        stable_bsmi = modify_stable_pka(bmol, stable_base)
     if len(unstable_base) > 0:
-        unstable_bsmi = modify_stable_pka(mc, unstable_base)
+        unstable_bsmi = modify_stable_pka(bmol, unstable_base)
     
     stable_smi = stable_asmi + stable_bsmi
     unstable_smi = unstable_asmi + unstable_bsmi
@@ -288,10 +302,11 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     seq2seq_source.close()
     seq2seq_target.close()
 
-
 if __name__=="__main__":
-    x,y = load_data('/scratch/cii2002/t5chem_new/t5chem_prop/data/CHEMBL/FULL/website/clean/train.source')
-    save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
+    x,y = load_data('/scratch/cii2002/pka/test.source')
+    print(x)
+    print(y)
+    #save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
 
 
    
