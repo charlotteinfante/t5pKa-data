@@ -175,12 +175,7 @@ def modify_unstable_pka(mol, unstable_data, i):
                 smi = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(new_mol)))
                 new_unsmis.append(smi)
             except (OverflowError, ValueError) as e:
-<<<<<<< HEAD
-                continue
-                
-=======
                 continue      
->>>>>>> dev
     return new_unsmis
 
 def ionize_mol(smi, ph):
