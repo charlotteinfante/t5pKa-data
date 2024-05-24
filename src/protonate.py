@@ -2,6 +2,7 @@
 originally sourced from https://github.com/Xundrug/MolTaut/blob/master/moltaut_src/molgpka/protonate.py
 '''
 from predict_pka import predict
+import argparse
 from copy import deepcopy
 from rdkit import Chem
 import pandas as pd
@@ -289,7 +290,7 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     if stable_only == False:
         all_data = stable_smi + unstable_smi
     else:
-        all_data = stable_only
+        all_data = stable_smi
     data = [item for sublist in all_data for item in sublist if sublist]
     for i in data:
         first_mol, second_mol, pka = i 
@@ -302,11 +303,29 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     seq2seq_source.close()
     seq2seq_target.close()
 
+def add_args(parser):
+    parser.add_argument(
+        "--data",
+        type=str,
+        required=True,
+        help="path of dataframe. should contain smiles and targets in same dataframe",)
+    parser.add_argument(
+        "--save",
+        type=str,
+        required=False,
+        help="path to save outputs",)
+
+def start_script(args):
+    if args.data:
+        x,y = load_data(args.data)
+    if args.save:
+        save_for_t5chem(x,y, args.save, stable_only=False)
+
 if __name__=="__main__":
-    x,y = load_data('/scratch/cii2002/pka/test.source')
-    print(x)
-    print(y)
-    #save_for_t5chem(x,y, '/scratch/cii2002/',stable_only=False)
+    parser = argparse.ArgumentParser()
+    add_args(parser)
+    args = parser.parse_args()
+    start_script(args)
 
 
    
