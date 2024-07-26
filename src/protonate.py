@@ -144,7 +144,7 @@ def modify_stable_pka(new_mol, stable_data):
                 # protonate atom
                 modify_base(at)
             smi = Chem.MolToSmiles(new_mol, canonical=True)
-            new_smis.append([original_smiles,smi, pka])
+            new_smis.append([original_smiles,smi, pka, acid_or_basic])
         # if this error occurs molecule most likely invalid, so just skip and continue
         except (OverflowError, ValueError) as e:
             continue
@@ -284,6 +284,7 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     '''
     micropka_source = open(str(path)+'micropka_train.source', 'w')
     micropka_target = open(str(path)+'micropka_train.target', 'w')
+    prefix = open(str(path)+'prefix.csv', 'w')
     seq2seq_source = open(str(path)+'seq2seq_train.source', 'w')
     seq2seq_target = open(str(path)+'seq2seq_train.target', 'w')
 
@@ -293,13 +294,15 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
         all_data = stable_smi
     data = [item for sublist in all_data for item in sublist if sublist]
     for i in data:
-        first_mol, second_mol, pka = i 
+        first_mol, second_mol, pka, acidic_or_basic = i 
         print(first_mol+'>>'+second_mol, file=micropka_source)
         print(pka, file=micropka_target)
+        print(acidic_or_basic, file=prefix)
         print(first_mol, file=seq2seq_source)
         print(second_mol, file=seq2seq_target)
     micropka_source.close()
     micropka_target.close()
+    prefix.close()
     seq2seq_source.close()
     seq2seq_target.close()
 
