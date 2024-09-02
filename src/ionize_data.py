@@ -10,6 +10,7 @@ from rdkit.Chem.Draw import rdMolDraw2D
 from protonate import modify_mol
 from protonate import get_pKa_data
 from protonate import modify_stable_pka
+from protonate import save_for_t5chem
 from copy import deepcopy
 import pdb
 
@@ -46,6 +47,7 @@ def read_data(path):
         else:
             combined_dict[smiles][2] = basic_pka_dict  # Update existing entry with basic pKa
     together = list(combined_dict.values())
+    breakpoint()
     return together
 
 def ionize(data, ph):
@@ -84,12 +86,15 @@ def ionize(data, ph):
         if len(unstable_base) > 0:
             unstable_bsmi = modify_stable_pka(bmol, unstable_base)
     
-        stable_smi = stable_asmi + stable_bsmi
-        unstable_smi = unstable_asmi + unstable_bsmi
-        print(stable_smi, unstable_smi)
+    stable_smi = stable_asmi + stable_bsmi
+    unstable_smi = unstable_asmi + unstable_bsmi
+    print(stable_smi, unstable_smi)
+    breakpoint()
+        #save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
     return stable_smi, unstable_smi
         
 
 
 if __name__=="__main__":
     ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)
+    
