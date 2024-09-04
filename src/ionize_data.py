@@ -19,11 +19,7 @@ def read_data(path):
     df_acid = data[data['BasicOrAcid'] == 'A']
     df_basic = data[data['BasicOrAcid'] == 'B']
 
-    df_acid = df_acid[:10]
-    df_basic = df_basic[:10]
-
     acid_list, basic_list = [], []
-    breakpoint()
     for smiles in df_acid['smiles'].unique():
         smiles_df = df_acid[df_acid['smiles'] == smiles]
         atom_pka_dict = dict(zip(smiles_df['Atom'], smiles_df['acd_pka']))
@@ -47,7 +43,6 @@ def read_data(path):
         else:
             combined_dict[smiles][2] = basic_pka_dict  # Update existing entry with basic pKa
     together = list(combined_dict.values())
-    breakpoint()
     return together
 
 def modify_mol(mol, acid_dict, base_dict):
@@ -84,7 +79,6 @@ def modify_mol(mol, acid_dict, base_dict):
 
 def ionize(data, ph):
     # list
-    breakpoint()
     organized_information = read_data(data)
     stable_acid_smi, stable_basic_smi = [], []
     unstable_acid_smi, unstable_basic_smi = [],[]
@@ -127,7 +121,6 @@ def ionize(data, ph):
     stable_smi = stable_acid_smi + stable_basic_smi
     unstable_smi = unstable_acid_smi + unstable_basic_smi
     print(stable_smi, unstable_smi)
-    breakpoint()
     save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
     return stable_smi, unstable_smi
         
