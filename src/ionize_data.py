@@ -90,7 +90,6 @@ def ionize(data, ph):
     unstable_acid_smi, unstable_basic_smi = [],[]
     for i in organized_information:
         # make smiles into object to be read by rdkit
-        breakpoint()
         omol = Chem.AddHs(Chem.MolFromSmiles(i[0]))
         mc = modify_mol(omol, i[1], i[2])
         # separates the modifications between acidic and basic when used in modify_stable_pka()
@@ -129,7 +128,7 @@ def ionize(data, ph):
     unstable_smi = unstable_acid_smi + unstable_basic_smi
     print(stable_smi, unstable_smi)
     breakpoint()
-        #save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
+    save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
     return stable_smi, unstable_smi
         
 
