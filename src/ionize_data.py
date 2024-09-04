@@ -7,7 +7,6 @@ RDLogger.DisableLog('rdApp.*')
 from rdkit.Chem import rdmolops
 from rdkit.Chem import rdDepictor
 from rdkit.Chem.Draw import rdMolDraw2D
-from protonate import modify_mol
 from protonate import get_pKa_data
 from protonate import modify_stable_pka
 from protonate import save_for_t5chem
@@ -16,6 +15,7 @@ import pdb
 
 def read_data(path):
     data = pd.read_csv(path)
+    # separate dataframe based on whether acidic or basic 
     df_acid = data[data['BasicOrAcid'] == 'A']
     df_basic = data[data['BasicOrAcid'] == 'B']
 
@@ -50,13 +50,48 @@ def read_data(path):
     breakpoint()
     return together
 
+def modify_mol(mol, acid_dict, base_dict):
+    '''
+    Sets a property of the correlated pka and type (Acid or Basic) to each ionizable atom in a given molecule.
+    Use after using predict function from predict_pka
+        mol: smiles rdkit object
+            (type: rdkit object)
+        acid_dict: dictionary with atom index as keys and pka as value
+            (type: dictionary)
+        base_dict: dictionary with atom index as keys and pka as value
+            (type: dictionary)
+        Returns smiles rdkit object
+    '''
+    # get the index of each atom
+    for at in mol.GetAtoms():
+        idx = at.GetIdx()
+        # if the index of the atom is in acid_dict keys
+        if idx in set(acid_dict.keys()):
+            # value = pka correlated to atom index of interest
+            value = acid_dict[idx]
+            # atom of interest is H, so get first neighboring atom
+            nat = at.GetNeighbors()[0]
+            nat.SetProp("ionization", "A")
+            nat.SetProp("pKa", str(value))
+        # elif the index of the atom is in base_dict keys
+        elif idx in set(base_dict.keys()):
+            value = base_dict[idx]
+            at.SetProp("ionization", "B")
+            at.SetProp("pKa", str(value))
+        else:
+            at.SetProp("ionization", "O")
+    return mol
+
 def ionize(data, ph):
     # list
     breakpoint()
     organized_information = read_data(data)
+    stable_acid_smi, stable_basic_smi = [], []
+    unstable_acid_smi, unstable_basic_smi = [],[]
     for i in organized_information:
         # make smiles into object to be read by rdkit
-        omol = Chem.MolFromSmiles(i[0])
+        breakpoint()
+        omol = Chem.AddHs(Chem.MolFromSmiles(i[0]))
         mc = modify_mol(omol, i[1], i[2])
         # separates the modifications between acidic and basic when used in modify_stable_pka()
         amol = deepcopy(mc)
@@ -78,16 +113,20 @@ def ionize(data, ph):
         stable_asmi, unstable_asmi = [],[]
         stable_bsmi, unstable_bsmi = [],[]
         if len(stable_acid) > 0:
-            stable_asmi = modify_stable_pka(amol, stable_acid)
+            stable_asmi = modify_stable_pka(AllChem.RemoveHs(amol), stable_acid)
+            stable_acid_smi.append(stable_asmi)
         if len(unstable_acid) > 0:
-            unstable_asmi = modify_stable_pka(amol, unstable_acid)
+            unstable_asmi = modify_stable_pka(AllChem.RemoveHs(amol), unstable_acid)
+            unstable_acid_smi.append(unstable_asmi)
         if len(stable_base) > 0:
-            stable_bsmi = modify_stable_pka(bmol, stable_base)
+            stable_bsmi = modify_stable_pka(AllChem.RemoveHs(bmol), stable_base)
+            stable_basic_smi.append(stable_bsmi)
         if len(unstable_base) > 0:
-            unstable_bsmi = modify_stable_pka(bmol, unstable_base)
+            unstable_bsmi = modify_stable_pka(AllChem.RemoveHs(bmol), unstable_base)
+            unstable_basic_smi.append(unstable_bsmi)
     
-    stable_smi = stable_asmi + stable_bsmi
-    unstable_smi = unstable_asmi + unstable_bsmi
+    stable_smi = stable_acid_smi + stable_basic_smi
+    unstable_smi = unstable_acid_smi + unstable_basic_smi
     print(stable_smi, unstable_smi)
     breakpoint()
         #save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
