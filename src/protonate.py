@@ -105,7 +105,7 @@ def modify_acid(at):
     '''
     hnum = at.GetNumExplicitHs()
     at.SetFormalCharge(-1)
-    at.SetNumExplicitHs(hnum-1)
+    #at.SetNumExplicitHs(hnum-1)
     return 
 
 def modify_base(at):
@@ -137,7 +137,7 @@ def modify_stable_pka(new_mol, stable_data):
         original_smiles = Chem.MolToSmiles(copy_mol, canonical=True)
         at = new_mol.GetAtomWithIdx(idx)
         try:
-            if acid_or_basic == "A":
+            if acid_or_basic == 'A':
                 # deprotonate atom
                 modify_acid(at)
             elif acid_or_basic == "B":
@@ -168,7 +168,7 @@ def modify_unstable_pka(mol, unstable_data, i):
             idx, pka, acid_or_basic = pka_data
             at = new_mol.GetAtomWithIdx(idx)
             try:
-                if acid_or_basic == "A":
+                if acid_or_basic == 'A':
                     modify_acid(at)
                 elif acid_or_basic == "B":
                     modify_base(at)
