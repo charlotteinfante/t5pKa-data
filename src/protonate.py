@@ -104,8 +104,11 @@ def modify_acid(at):
         Returns: ionized rdkit molecule 
     '''
     hnum = at.GetNumExplicitHs()
-    at.SetFormalCharge(-1)
-    #at.SetNumExplicitHs(hnum-1)
+    if hnum > 0:
+        at.SetFormalCharge(-1)
+        at.SetNumExplicitHs(hnum-1)
+    else:
+        at.SetFormalCharge(-1)
     return 
 
 def modify_base(at):
