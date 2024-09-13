@@ -273,6 +273,13 @@ def load_data(path):
         stable_smi.append(stable)
         unstable_smi.append(unstable)
     return stable_smi, unstable_smi
+    
+def get_atom_charges(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise ValueError(f"Invalid SMILES string: {smiles}")
+    charges = [atom.GetFormalCharge() for atom in mol.GetAtoms()]
+    return charges
 
 def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     '''
@@ -300,12 +307,13 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     seq_prefix = []
     for i in data:
         first_mol, second_mol, pka, acidic_or_basic = i 
-        first_charge = Chem.GetFormalCharge(Chem.MolFromSmiles(first_mol))
-        second_charge = Chem.GetFormalCharge(Chem.MolFromSmiles(second_mol))
-        if first_charge < second_charge:
-            seq_prefix = 'Reactants'
-        elif first_charge > second_charge:
-            seq_prefix = 'Product'
+        first_charges = get_atom_charges(first_mol)
+        second_charges = get_atom_charges(second_mol)
+        for i, (first_charge, second_charge) in enumerate(zip(first_charges, second_charges)):
+            if first_charge < second_charge:
+                seq_prefix = 'Reactants'
+            elif first_charge > second_charge:
+                seq_prefix = 'Product'
         print(first_mol+'>>'+second_mol, file=micropka_source)
         print(pka, file=micropka_target)
         print(acidic_or_basic, file=prefix)
