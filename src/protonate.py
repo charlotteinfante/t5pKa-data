@@ -104,8 +104,11 @@ def modify_acid(at):
         Returns: ionized rdkit molecule 
     '''
     hnum = at.GetNumExplicitHs()
-    at.SetFormalCharge(-1)
-    at.SetNumExplicitHs(hnum-1)
+    if hnum > 0:
+        at.SetFormalCharge(-1)
+        at.SetNumExplicitHs(hnum-1)
+    else:
+        at.SetFormalCharge(-1)
     return 
 
 def modify_base(at):
@@ -137,14 +140,14 @@ def modify_stable_pka(new_mol, stable_data):
         original_smiles = Chem.MolToSmiles(copy_mol, canonical=True)
         at = new_mol.GetAtomWithIdx(idx)
         try:
-            if acid_or_basic == "A":
+            if acid_or_basic == 'A':
                 # deprotonate atom
                 modify_acid(at)
             elif acid_or_basic == "B":
                 # protonate atom
                 modify_base(at)
             smi = Chem.MolToSmiles(new_mol, canonical=True)
-            new_smis.append([original_smiles,smi, pka])
+            new_smis.append([original_smiles,smi, pka, acid_or_basic])
         # if this error occurs molecule most likely invalid, so just skip and continue
         except (OverflowError, ValueError) as e:
             continue
@@ -168,7 +171,7 @@ def modify_unstable_pka(mol, unstable_data, i):
             idx, pka, acid_or_basic = pka_data
             at = new_mol.GetAtomWithIdx(idx)
             try:
-                if acid_or_basic == "A":
+                if acid_or_basic == 'A':
                     modify_acid(at)
                 elif acid_or_basic == "B":
                     modify_base(at)
@@ -284,6 +287,8 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     '''
     micropka_source = open(str(path)+'micropka_train.source', 'w')
     micropka_target = open(str(path)+'micropka_train.target', 'w')
+    prefix = open(str(path)+'prefix.csv', 'w')
+    seq2seq_prefix = open(str(path)+'seq2seq_prefix.csv','w')
     seq2seq_source = open(str(path)+'seq2seq_train.source', 'w')
     seq2seq_target = open(str(path)+'seq2seq_train.target', 'w')
 
@@ -292,14 +297,25 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     else:
         all_data = stable_smi
     data = [item for sublist in all_data for item in sublist if sublist]
+    seq_prefix = []
     for i in data:
-        first_mol, second_mol, pka = i 
+        first_mol, second_mol, pka, acidic_or_basic = i 
+        first_charge = Chem.GetFormalCharge(Chem.MolFromSmiles(first_mol))
+        second_charge = Chem.GetFormalCharge(Chem.MolFromSmiles(second_mol))
+        if first_charge < second_charge:
+            seq_prefix = 'Reactants'
+        elif first_charge > second_charge:
+            seq_prefix = 'Product'
         print(first_mol+'>>'+second_mol, file=micropka_source)
         print(pka, file=micropka_target)
+        print(acidic_or_basic, file=prefix)
+        print(seq_prefix, file=seq2seq_prefix)
         print(first_mol, file=seq2seq_source)
         print(second_mol, file=seq2seq_target)
     micropka_source.close()
     micropka_target.close()
+    prefix.close()
+    seq2seq_prefix.close()
     seq2seq_source.close()
     seq2seq_target.close()
 
