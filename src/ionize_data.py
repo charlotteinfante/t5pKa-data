@@ -84,6 +84,8 @@ def ionize(data, ph):
     unstable_acid_smi, unstable_basic_smi = [],[]
     for i in organized_information:
         # make smiles into object to be read by rdkit
+        if not Chem.MolFromSmiles(i[0]):
+            continue
         omol = Chem.AddHs(Chem.MolFromSmiles(i[0]))
         mc = modify_mol(omol, i[1], i[2])
         # separates the modifications between acidic and basic when used in modify_stable_pka()

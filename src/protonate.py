@@ -320,6 +320,11 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     seq_prefix = []
     for i in data:
         first_mol, second_mol, pka, acidic_or_basic = i 
+        # check to see if molecules are valid 
+        if not Chem.MolFromSmiles(first_mol):
+            continue
+        if not Chem.MolFromSmiles(second_mol):
+            continue
         seq_prefix = compare_charges(first_mol, second_mol)
         print(first_mol+'>>'+second_mol, file=micropka_source)
         print(pka, file=micropka_target)
