@@ -281,16 +281,25 @@ def get_atom_charges(smiles):
     charges = [atom.GetFormalCharge() for atom in mol.GetAtoms()]
     return charges
 
-def compare_charges(smiles1,smiles2):
+def compare_charges(smiles1, smiles2):
     first_charges = get_atom_charges(smiles1)
     second_charges = get_atom_charges(smiles2)
+    
     prefix = None
-    for y, (first_charge, second_charge) in enumerate(zip(first_charges, second_charges)):
-        if first_charge < second_charge:
-            prefix = 'Reactants'
-        elif first_charge > second_charge:
-            prefix = 'Product'
-    if prefix is None:
+    charge_differences = []
+    for first_charge, second_charge in zip(first_charges, second_charges):
+        if first_charge != second_charge:
+            charge_differences.append([first_charge, second_charge])
+    
+    # Calculate the sum of first and second lists in charge_differences
+    sum_1 = sum(sublist[0] for sublist in charge_differences)
+    sum_2 = sum(sublist[1] for sublist in charge_differences)
+    
+    if sum_1 < sum_2:
+        prefix = 'Reactants'
+    elif sum_1 > sum_2:
+        prefix = 'Product'
+    else:  # sum_1 == sum_2
         return "No charge difference"
     return prefix
 
