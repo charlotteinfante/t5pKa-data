@@ -1,0 +1,12 @@
+filename,smiles,origin,Atom,BasicOrAcid,acd_pka,epik_pka
+obabel_000chembl0000000002.sdf,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(C#N)cc1,t,30,A,6.44,7.18
+obabel_000chembl0000000003.sdf,Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1,t,30,A,6.59,7.23
+obabel_000chembl0000000003.sdf,Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1,t,5,B,0.0,0.96
+obabel_000chembl0000000008.sdf,O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl,t,31,A,6.08,6.98
+obabel_000chembl0000000009.sdf,CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2Cl)cc1,t,35,A,6.09,6.98
+obabel_000chembl0000000021.sdf,O=C(c1ccc(Cl)cc1)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl,t,31,A,6.09,6.98
+obabel_000chembl0000000027.sdf,O=C(c1ccccc1)c1ccc(-n2ncc(=O)[nH]c2=O)cc1,t,30,A,6.19,7.0
+obabel_000chembl0000000028.sdf,O=c1cnn(-c2ccc(C(O)c3ccc(Cl)cc3)c(Cl)c2)c(=O)[nH]1,t,34,A,6.22,6.98
+obabel_000chembl0000000030.sdf,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(O)c1ccccc1,t,28,A,6.59,7.23
+obabel_000chembl0000000030.sdf,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(O)c1ccccc1,t,5,B,0.19,0.96
+obabel_000chembl0000000032.sdf,COc1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2)cc1,t,32,A,6.13,7.0
