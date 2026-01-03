@@ -127,4 +127,5 @@ def ionize(data, ph):
         
 
 if __name__=="__main__":
-    ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)
+    ionize('/scratch/cii2002/MolGpKa-data/src/epik/full_ACD_CHEMBL_pka_short.csv', 7.4)
+    #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)

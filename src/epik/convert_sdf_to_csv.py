@@ -46,8 +46,8 @@ def main():
     use_1 = use_1 & ~df['diff_1'].isna()
 
     # Select closest pKa and atom
-    df['Epik pKa'] = np.where(use_1, df['pKa_1'], df['pKa_2'])
-    df['Epik pKa_atom'] = np.where(use_1, df['pKa_atom_1'], df['pKa_atom_2'])
+    df['epik_pka'] = np.where(use_1, df['pKa_1'], df['pKa_2'])
+    df['Atom'] = np.where(use_1, df['pKa_atom_1'], df['pKa_atom_2'])
 
     # drop columns
     df = df.drop(columns=['diff_1', 'diff_2','pKa_1','pKa_2','pKa_atom_1','pKa_atom_2'])
