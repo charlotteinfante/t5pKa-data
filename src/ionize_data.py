@@ -126,7 +126,5 @@ def ionize(data, ph):
     return stable_smi, unstable_smi
         
 
-
 if __name__=="__main__":
     ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)
-    
