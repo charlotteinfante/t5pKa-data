@@ -16,6 +16,8 @@ import pdb
 def read_data(path):
     data = pd.read_csv(path)
     # separate dataframe based on whether acidic or basic 
+    #breakpoint()
+    data["Atom"] = pd.to_numeric(data["Atom"], errors="coerce") - 1
     df_acid = data[data['BasicOrAcid'] == 'A']
     df_basic = data[data['BasicOrAcid'] == 'B']
 
@@ -127,5 +129,5 @@ def ionize(data, ph):
         
 
 if __name__=="__main__":
-    ionize('/scratch/cii2002/MolGpKa-data/src/epik/full_ACD_CHEMBL_pka_short.csv', 7.4)
+    ionize('/scratch/cii2002/MolGpKa-data/src/epik/epik_test.csv', 7.4)
     #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)

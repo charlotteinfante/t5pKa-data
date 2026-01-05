@@ -52,6 +52,7 @@ def modify_mol(mol, acid_dict, base_dict):
         else:
             at.SetProp("ionization", "O")
     # remove the explicit hydrogens in the molecule
+    breakpoint()
     nmol = AllChem.RemoveHs(mol)
     return nmol
 
