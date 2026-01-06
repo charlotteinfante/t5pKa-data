@@ -1,3 +1,5 @@
+__pycache__/
+*.pyc
 ab*
 /src/epik/ACD_CHEMBL_pka_short.log
 /src/epik/ACD_CHEMBL_pka_short.mae.gz
