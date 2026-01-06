@@ -3,6 +3,7 @@ This script is meant to use the protonate.py script and reads in a file that con
 It uses information from outside sources and only uses the protonate.py to ionize the molecule based on the given information. In other words, MolGpka prediction is not used. 
 '''
 import pandas as pd
+from pathlib import Path
 import argparse
 from rdkit import Chem
 from rdkit.Chem import AllChem,Draw
@@ -17,12 +18,14 @@ from protonate import save_for_t5chem
 from copy import deepcopy
 import pdb
 
-def read_data(path):
+def read_data(path, epik=False):
     data = pd.read_csv(path)
     # separate dataframe based on whether acidic or basic 
     df_acid = data[data['BasicOrAcid'] == 'A']
     df_basic = data[data['BasicOrAcid'] == 'B']
-
+    if epik is True:
+        df_basic['Atom'] = df_basic['Atom'] - 1
+        
     acid_list, basic_list = [], []
     for smiles in df_acid['smiles'].unique():
         smiles_df = df_acid[df_acid['smiles'] == smiles]
@@ -81,9 +84,12 @@ def modify_mol(mol, acid_dict, base_dict):
             at.SetProp("ionization", "O")
     return mol
 
-def ionize(data, ph):
+def ionize(data, ph, epik=False):
     # list
-    organized_information = read_data(data)
+    if epik is True:
+        organized_information = read_data(data, epik=True)
+    else:
+        organized_information = read_data(data)
     stable_acid_smi, stable_basic_smi = [], []
     unstable_acid_smi, unstable_basic_smi = [],[]
     for i in organized_information:
@@ -126,11 +132,16 @@ def ionize(data, ph):
     stable_smi = stable_acid_smi + stable_basic_smi
     unstable_smi = unstable_acid_smi + unstable_basic_smi
     print(stable_smi, unstable_smi)
-    save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
+    repo_root = Path(__file__).resolve().parent.parent   # go up from src/ to repo root
+    out_dir = repo_root / "outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    #breakpoint()
+    save_for_t5chem(stable_smi, unstable_smi, str(out_dir)+'/', stable_only=False)
     return stable_smi, unstable_smi
 
 
 
 if __name__=="__main__":
-    ionize('/scratch/cii2002/epik/epik_predicts.csv')
-    #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)
+    #ionize('/scratch/cii2002/MolGpKa-data/src/epik/epik_predicts.csv', 7.4, epik=True)
+    ionize('/scratch/cii2002/MolGpKa-data/src/datasets/CHEMBL_EX_USING_molgpka_atomnum.csv', 7.4, epik=False)
+    #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4, epik=False)
