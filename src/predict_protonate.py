@@ -1,5 +1,8 @@
 '''
 originally sourced from https://github.com/Xundrug/MolTaut/blob/master/moltaut_src/molgpka/protonate.py
+
+This script is mean to (a) use MolGpka to predict both the ionization site and the pKa if only given the SMILES of the molecules(s) and to (b) read in a file that contains 'smiles','acd_pka', and 'BasicOrAcid' columns and \
+only use MolGpka's prediction of the ionized atom while keeping the given pKa by ACD Labs and the given 'A' or 'B' from the 'BasicOrAcid' column
 '''
 from predict_pka import predict
 import argparse
@@ -178,13 +181,23 @@ def modify_unstable_pka(mol, unstable_data, i):
                 continue      
     return new_unsmis
 
-def ionize_mol(smi, ph):
+def ionize_mol(smi, ph, pka=None, baseoracid=None):
     print(smi)
     omol = Chem.MolFromSmiles(smi)
     # run pka prediction of molecule; returns base_dict, acid_dict, and smiles object
     obase_dict, oacid_dict, omol = predict(omol)
+    if pka is not None:
+        if baseoracid == 'A':
+            closest_key = min(oacid_dict, key=lambda k: abs(oacid_dict[k] - pka))
+            oacid_dict = {closest_key:pka}
+            obase_dict = {}
+        elif baseoracid == 'B':
+            closest_key = min(obase_dict, key=lambda k: abs(obase_dict[k] - pka))
+            obase_dict = {closest_key:pka}
+            oacid_dict = {}
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
+    breakpoint()
 
     # separates the modifications between acidic and basic when used in modify_stable_pka()
     amol = deepcopy(mc)
@@ -261,12 +274,25 @@ def load_data(path):
             (type: str)
         Returns: two lists (stable_smi and unstable_smi)
     '''
-    data = pd.read_csv(path, names=['smiles'])
+    # check file to see if there are pre-existing columns
+    with open(path, 'r') as f:
+        first_line = f.readline().strip().lower()
+    if 'smiles' in first_line or 'acd_pka' in first_line:
+        data = pd.read_csv(path)
+    else:
+        data = pd.read_csv(path, names=['smiles'])
+
     if data['smiles'].str.contains('acidic:|basic:').any():
-        data[['prefix','smiles']] = data['smiles'].str.split(':',expand=True)
+            data[['prefix','smiles']] = data['smiles'].str.split(':',expand=True)
+    has_pka = 'acd_pka' in data.columns
+
     stable_smi, unstable_smi = [], []
-    for i in data['smiles']:
-        stable, unstable = ionize_mol(i, ph=7.4)
+    for _, row in data.iterrows():
+        smi = row['smiles']
+        if has_pka and not pd.isna(row['acd_pka']):
+            stable, unstable = ionize_mol(smi, ph=7.4, pka=row['acd_pka'], baseoracid=row['BasicOrAcid'])
+        else: 
+            stable, unstable = ionize_mol(smi, ph=7.4)
         stable_smi.append(stable)
         unstable_smi.append(unstable)
     return stable_smi, unstable_smi
