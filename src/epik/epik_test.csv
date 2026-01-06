@@ -1,0 +1,2 @@
+smiles_ionized_by_epik,BasicOrAcid,acd_pka,smiles,epik_pka,Atom
+O=c1nc([O-])cnn1-c1ccc(C(O)c2ccc(Cl)cc2)c(Cl)c1,A,6.22,O=c1cnn(-c2ccc(C(O)c3ccc(Cl)cc3)c(Cl)c2)c(=O)[nH]1,6.981,24

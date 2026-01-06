@@ -1,0 +1,11 @@
+WARNING: Could not find any nv files on this host!
+Traceback (most recent call last):
+  File "/scratch/cii2002/MolGpKa-data/src/ionize_data.py", line 131, in <module>
+    ionize('/scratch/cii2002/MolGpKa-data/src/epik/full_ACD_CHEMBL_pka_short.csv', 7.4)
+  File "/scratch/cii2002/MolGpKa-data/src/ionize_data.py", line 83, in ionize
+    organized_information = read_data(data)
+                            ^^^^^^^^^^^^^^^
+  File "/scratch/cii2002/MolGpKa-data/src/ionize_data.py", line 19, in read_data
+    data = data["Atom"] = -1
+           ~~~~^^^^^^^^
+TypeError: 'int' object does not support item assignment
