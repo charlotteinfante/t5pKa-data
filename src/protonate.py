@@ -52,7 +52,6 @@ def modify_mol(mol, acid_dict, base_dict):
         else:
             at.SetProp("ionization", "O")
     # remove the explicit hydrogens in the molecule
-    breakpoint()
     nmol = AllChem.RemoveHs(mol)
     return nmol
 
@@ -218,7 +217,7 @@ def ionize_mol(smi, ph):
         stable_bsmi = modify_stable_pka(bmol, stable_base)
     if len(unstable_base) > 0:
         unstable_bsmi = modify_stable_pka(bmol, unstable_base)
-    
+
     stable_smi = stable_asmi + stable_bsmi
     unstable_smi = unstable_asmi + unstable_bsmi
 
@@ -282,25 +281,16 @@ def get_atom_charges(smiles):
     charges = [atom.GetFormalCharge() for atom in mol.GetAtoms()]
     return charges
 
-def compare_charges(smiles1, smiles2):
+def compare_charges(smiles1,smiles2):
     first_charges = get_atom_charges(smiles1)
     second_charges = get_atom_charges(smiles2)
-    
     prefix = None
-    charge_differences = []
-    for first_charge, second_charge in zip(first_charges, second_charges):
-        if first_charge != second_charge:
-            charge_differences.append([first_charge, second_charge])
-    
-    # Calculate the sum of first and second lists in charge_differences
-    sum_1 = sum(sublist[0] for sublist in charge_differences)
-    sum_2 = sum(sublist[1] for sublist in charge_differences)
-    
-    if sum_1 < sum_2:
-        prefix = 'Reactants'
-    elif sum_1 > sum_2:
-        prefix = 'Product'
-    else:  # sum_1 == sum_2
+    for y, (first_charge, second_charge) in enumerate(zip(first_charges, second_charges)):
+        if first_charge < second_charge:
+            prefix = 'Reactants'
+        elif first_charge > second_charge:
+            prefix = 'Product'
+    if prefix is None:
         return "No charge difference"
     return prefix
 
@@ -372,7 +362,3 @@ if __name__=="__main__":
     add_args(parser)
     args = parser.parse_args()
     start_script(args)
-
-
-   
-

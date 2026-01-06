@@ -1,3 +1,7 @@
+'''
+This script is meant to use the protonate.py script and reads in a file that contains: 'smiles','BaseOrAcid','acd_pka', and 'Atom' columns. 
+It uses information from outside sources and only uses the protonate.py to ionize the molecule based on the given information. In other words, MolGpka prediction is not used. 
+'''
 import pandas as pd
 import argparse
 from rdkit import Chem
@@ -16,8 +20,6 @@ import pdb
 def read_data(path):
     data = pd.read_csv(path)
     # separate dataframe based on whether acidic or basic 
-    #breakpoint()
-    data["Atom"] = pd.to_numeric(data["Atom"], errors="coerce") - 1
     df_acid = data[data['BasicOrAcid'] == 'A']
     df_basic = data[data['BasicOrAcid'] == 'B']
 
@@ -26,7 +28,7 @@ def read_data(path):
         smiles_df = df_acid[df_acid['smiles'] == smiles]
         atom_pka_dict = dict(zip(smiles_df['Atom'], smiles_df['acd_pka']))
         acid_list.append([smiles, atom_pka_dict])
-    
+
     for smiles in df_basic['smiles'].unique():
         smiles_df = df_basic[df_basic['smiles'] == smiles]
         atom_pka_dict = dict(zip(smiles_df['Atom'], smiles_df['acd_pka']))
@@ -126,8 +128,9 @@ def ionize(data, ph):
     print(stable_smi, unstable_smi)
     save_for_t5chem(stable_smi, unstable_smi, '/scratch/cii2002/', stable_only=False)
     return stable_smi, unstable_smi
-        
+
+
 
 if __name__=="__main__":
-    ionize('/scratch/cii2002/MolGpKa-data/src/epik/epik_test.csv', 7.4)
+    ionize('/scratch/cii2002/epik/epik_predicts.csv')
     #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4)
