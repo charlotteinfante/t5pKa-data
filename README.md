@@ -25,4 +25,5 @@ A. Using only SMILES files (with no information on pKa, BasicOrAcid, and atom nu
 `$ python predict_protonate.py --data datasets/train.source --save /path/to/be/saved/in/`
 
 B. Using a file with information containing 'acd_pKa','BasicOrAcid', and 'Atom' number
+
 `$ python predict_protonate.py --data src/datasets/CHEMBL_EX_USING_molgpka_atomnum.csv --save /path/to/be/saved/in/`
