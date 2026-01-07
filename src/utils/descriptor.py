@@ -1,3 +1,7 @@
+'''
+originally sourced from https://github.com/Xundrug/MolGpKa/tree/master/src/utils
+Author: Xiaolin Pan
+'''
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import RDLogger

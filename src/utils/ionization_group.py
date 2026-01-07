@@ -1,3 +1,7 @@
+'''
+originally sourced from https://github.com/Xundrug/MolGpKa/tree/master/src/utils
+Author: Xiaolin Pan
+'''
 #!/usr/bin/env python
 # coding: utf-8
 

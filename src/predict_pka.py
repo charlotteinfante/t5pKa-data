@@ -1,3 +1,7 @@
+'''
+originally sourced from https://github.com/Xundrug/MolGpKa/blob/master/src/predict_pka.py
+Author: Xiaolin Pan
+'''
 #!/usr/bin/env python
 # coding: utf-8
 

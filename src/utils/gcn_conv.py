@@ -1,3 +1,7 @@
+'''
+originally sourced from https://github.com/Xundrug/MolGpKa/tree/master/src/utils
+Author: Xiaolin Pan
+'''
 import torch
 from torch.nn import Parameter
 from torch_scatter import scatter_add
