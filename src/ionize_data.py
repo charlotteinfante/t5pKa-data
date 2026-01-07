@@ -12,9 +12,9 @@ RDLogger.DisableLog('rdApp.*')
 from rdkit.Chem import rdmolops
 from rdkit.Chem import rdDepictor
 from rdkit.Chem.Draw import rdMolDraw2D
-from protonate import get_pKa_data
-from protonate import modify_stable_pka
-from protonate import save_for_t5chem
+from ionize import get_pKa_data
+from ionize import modify_stable_pka
+from ionize import save_for_t5chem
 from copy import deepcopy
 import pdb
 
@@ -22,7 +22,7 @@ def read_data(path, epik=False):
     data = pd.read_csv(path)
     # separate dataframe based on whether acidic or basic 
     df_acid = data[data['BasicOrAcid'] == 'A']
-    df_basic = data[data['BasicOrAcid'] == 'B']
+    df_basic = data[data['BasicOrAcid'] == 'B'].copy()
     if epik is True:
         df_basic['Atom'] = df_basic['Atom'] - 1
         
@@ -142,6 +142,6 @@ def ionize(data, ph, epik=False):
 
 
 if __name__=="__main__":
-    #ionize('/scratch/cii2002/MolGpKa-data/src/epik/epik_predicts.csv', 7.4, epik=True)
-    ionize('/scratch/cii2002/MolGpKa-data/src/datasets/CHEMBL_EX_USING_molgpka_atomnum.csv', 7.4, epik=False)
+    ionize('/scratch/cii2002/MolGpKa-data/src/epik/epik_predicts.csv', 7.4, epik=True)
+    #ionize('/scratch/cii2002/MolGpKa-data/src/datasets/CHEMBL_EX_USING_molgpka_atomnum.csv', 7.4, epik=False)
     #ionize('/vast/cii2002/full_ACD_CHEMBL_pka.csv', 7.4, epik=False)

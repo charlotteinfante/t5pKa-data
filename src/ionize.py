@@ -197,7 +197,6 @@ def ionize_mol(smi, ph, pka=None, baseoracid=None):
             oacid_dict = {}
     # get molecule object with each ionziable atom containing pka and A or B type info
     mc = modify_mol(omol, oacid_dict, obase_dict)
-    breakpoint()
 
     # separates the modifications between acidic and basic when used in modify_stable_pka()
     amol = deepcopy(mc)
