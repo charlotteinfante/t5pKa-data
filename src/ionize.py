@@ -296,6 +296,25 @@ def load_data(path):
         unstable_smi.append(unstable)
     return stable_smi, unstable_smi
 
+def organize_ionization(first_mol, second_mol, acidic_or_basic):
+    """
+    Returns:
+      ordered_first_mol
+      ordered_second_mol
+      prefix  ('Prot' or 'Deprot')
+    """
+    if acidic_or_basic == 'A':
+        # Acidic: keep order, deprotonation
+        return first_mol, second_mol, 'Deprot'
+
+    elif acidic_or_basic == 'B':
+        # Basic: swap order, protonation
+        return second_mol, first_mol, 'Prot'
+
+    else:
+        raise ValueError(f"Unknown acidic_or_basic value: {acidic_or_basic}")
+
+
 def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     '''
     Organize the output from load_data or ionize_mol in a suitable format for T5Chem-pKa.
@@ -320,10 +339,11 @@ def save_for_t5chem(stable_smi, unstable_smi, path, stable_only):
     data = [item for sublist in all_data for item in sublist if sublist]
     for i in data:
         first_mol, second_mol, pka, acidic_or_basic = i 
-        print(first_mol+'>>'+second_mol, file=micropka_source)
+        fm, sm, prefix_ = organize_ionization(first_mol,second_mol,acidic_or_basic)
+        print(fm+'>>'+sm, file=micropka_source)
         print(pka, file=micropka_target)
-        print(acidic_or_basic, file=prefix)
-        print(first_mol, file=seq2seq_source)
+        print(prefix_, file=prefix)
+        print(str(prefix_) + ':' + str(first_mol), file=seq2seq_source)
         print(second_mol, file=seq2seq_target)
     micropka_source.close()
     micropka_target.close()
