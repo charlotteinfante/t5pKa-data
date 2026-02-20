@@ -1,0 +1,12 @@
+smiles_ionized_by_epik,BasicOrAcid,acd_pka,smiles,epik_pka,Atom
+Cc1cc(-n2ncc([O-])nc2=O)ccc1C(=O)c1ccc(C#N)cc1,A,6.44,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(=O)c1ccc(C#N)cc1,-,-
+Cc1cc(-n2ncc([O-])nc2=O)cc(C)c1C(O)c1ccc(Cl)cc1,A,6.59,Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1,-,-
+Cc1cc(-n2ncc([O-])nc2=O)cc(C)c1C(O)c1ccc(Cl)cc1,B,0.0,Cc1cc(-n2ncc(=O)[nH]c2=O)cc(C)c1C(O)c1ccc(Cl)cc1,-,-
+O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc([O-])nc2=O)cc1Cl,A,6.08,O=C(c1ccc(Cl)cc1Cl)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl,-,-
+CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc([O-])nc3=O)cc2Cl)cc1,A,6.09,CS(=O)(=O)c1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2Cl)cc1,-,-
+O=C(c1ccc(Cl)cc1)c1ccc(-n2ncc([O-])nc2=O)cc1Cl,A,6.09,O=C(c1ccc(Cl)cc1)c1ccc(-n2ncc(=O)[nH]c2=O)cc1Cl,-,-
+O=C(c1ccccc1)c1ccc(-n2ncc([O-])nc2=O)cc1,A,6.19,O=C(c1ccccc1)c1ccc(-n2ncc(=O)[nH]c2=O)cc1,-,-
+O=c1nc([O-])cnn1-c1ccc(C(O)c2ccc(Cl)cc2)c(Cl)c1,A,6.22,O=c1cnn(-c2ccc(C(O)c3ccc(Cl)cc3)c(Cl)c2)c(=O)[nH]1,-,-
+Cc1cc(-n2ncc([O-])nc2=O)ccc1C(O)c1ccccc1,A,6.59,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(O)c1ccccc1,-,-
+Cc1cc(-n2ncc([O-])nc2=O)ccc1C(O)c1ccccc1,B,0.19,Cc1cc(-n2ncc(=O)[nH]c2=O)ccc1C(O)c1ccccc1,-,-
+COc1ccc(C(=O)c2ccc(-n3ncc([O-])nc3=O)cc2)cc1,A,6.13,COc1ccc(C(=O)c2ccc(-n3ncc(=O)[nH]c3=O)cc2)cc1,-,-
