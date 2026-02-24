@@ -1,5 +1,7 @@
 # Generate pKa Dataset for Model Training
 ### Generate Calculated pKa data using Schrödinger's Epik version 2021
+For package dependency information, visit [here](https://github.com/Xundrug/MolGpKa/blob/master/environment.yml) if you want to run scripts using MolGpKa.
+
 Using `src/epik/ACD_CHEMBL_pka_short.smi` as an **example** smiles file
 
 1. Go to src/epik and run make_epik_prediction.sbatch to get epik predictions
