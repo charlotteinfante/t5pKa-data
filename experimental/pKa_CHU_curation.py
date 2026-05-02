@@ -453,7 +453,7 @@ aa_df = mol_and_fp(aa_df, 'canonical smiles')
 # import datasets
 print('======================================= IMPORTING DATASETS: LENGTH OF DATASETS SHOWN BELOW ================================================')
 print('= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =')
-ml_meets_pka = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/ml_meets_pka.csv')
+ml_meets_pka = pd.read_csv('data/ml_meets_pka.csv')
 ml_meets_pka = ml_meets_pka.rename(columns={'marvin_pKa_type': 'prefix'})
 ml_meets_pka = ml_meets_pka.rename(columns={'pKa': 'target'})
 ml_meets_pka['canonical smiles'] = [Chem.MolToSmiles(Chem.MolFromSmiles(i)) for i in ml_meets_pka['smiles']]
@@ -462,7 +462,7 @@ ml_meets_pka['citation'] = ['Machine Learning meets pKa' for i in range(len(ml_m
 ml_meets_pka = mol_and_fp(ml_meets_pka, 'canonical smiles')
 print('# of molecules in Machines Learning meets pKa: ' + str(len(ml_meets_pka)))
 
-comp_9_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/comparing_9_programs_for_pka_prediction_oct_20_2025.csv')
+comp_9_ = pd.read_csv('data/comparing_9_programs_for_pka_prediction_oct_20_2025.csv')
 comp_9 = comp_9_.rename(columns={'rdkit canonical SMILES':'smiles','marvin type': 'prefix','pKa':'target','marvin SMILES':'ionized smiles'})
 comp_9['micropka input'] = (comp_9['micropka input'].astype(str).apply(canonicalize_micropka_pair))
 comp_9['citation'] = ['Comparison of 9 programs for pKa prediction' for i in range(len(comp_9))]
@@ -483,7 +483,7 @@ duplicates_comp9 = comp_9[comp_9.duplicated(subset=['canonical smiles','prefix']
 comp_9 = mol_and_fp(comp_9, 'canonical smiles')
 print('# of molecules in Comparsion of 9 programs for pKa prediction BEFORE|AFTER removing more than 1 pKa or pKaH per molecule: ' + str(len(comp_9_)) + '|' + str(len(comp_9)))
 
-az_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/az_results.csv')
+az_ = pd.read_csv('data/az_results.csv')
 az = az_.rename(columns={'SMILES':'smiles','Marvin type':'prefix','pKa experimental':'target','Marvin SMILES':'ionized smiles'})
 az['micropka input'] = (az['micropka input'].astype(str).apply(canonicalize_micropka_pair))
 az['citation']  = ['AZ' for i in range(len(az))]
@@ -495,7 +495,7 @@ duplicates_az = az[az.duplicated(subset=['canonical smiles','prefix'], keep=Fals
 az = mol_and_fp(az, 'canonical smiles')
 print('# of molecules in AZ BEFORE|AFTER removing more than 1 pKa or pKaH per molecule: ' + str(len(az_)) + '|' + str(len(az)))
 
-manchester_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/manchester_canonical_oct_20_2025.csv')
+manchester_ = pd.read_csv('data/manchester_canonical_oct_20_2025.csv')
 manchester = manchester_.rename(columns={'rdkit canonical smiles':'smiles','pKa experimental':'target','Marvin Type':'prefix','Marvin SMILES':'ionized smiles'})
 manchester['micropka input'] = (manchester['micropka input'].astype(str).apply(canonicalize_micropka_pair))
 manchester['citation'] = ['Manchester' for i in range(len(manchester))]
@@ -507,7 +507,7 @@ duplicates_manchester = manchester[manchester.duplicated(subset=['micropka input
 manchester = mol_and_fp(manchester, 'canonical smiles')
 print('# of molecules in Manchester BEFORE|AFTER removing more than 1 pKa or pKaH per molecule: ' + str(len(manchester_)) + '|' + str(len(manchester)))
 
-vertex_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/vertex_pka_oct_20_2025.csv')
+vertex_ = pd.read_csv('data/vertex_pka_oct_20_2025.csv')
 vertex = vertex_.rename(columns={'rdkit canonical smiles':'smiles','pKa experimental':'target','Marvin Type':'prefix','Marvin SMILES':'ionized smiles'})
 vertex['micropka input'] = (vertex['micropka input'].astype(str).apply(canonicalize_micropka_pair))
 vertex['citation'] = ['Vertex' for i in range(len(vertex))]
@@ -519,7 +519,7 @@ duplicates_vertex = vertex[vertex.duplicated(subset=['canonical smiles','prefix'
 vertex = mol_and_fp(vertex, 'canonical smiles')
 print('# of molecules in Vertex BEFORE|AFTER removing more than 1 pKa or pKaH per molecule: ' + str(len(vertex_)) + '|' + str(len(vertex)))
 
-morgan_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/morgen_pka.csv')
+morgan_ = pd.read_csv('data/morgen_pka.csv')
 morgan = morgan_.rename(columns={'rdkit canonical smiles':'smiles','pKa experimental':'target','Marvin Type':'prefix','Marvin SMILES':'ionized smiles'})
 morgan['micropka input'] = (morgan['micropka input'].astype(str).apply(canonicalize_micropka_pair))
 morgan['citation'] = ['MorgenThaler' for i in range(len(morgan))]
@@ -531,7 +531,7 @@ duplicates_morgan = morgan[morgan.duplicated(subset=['micropka input'], keep=Fal
 morgan = mol_and_fp(morgan, 'canonical smiles')
 print('# of molecules in Morgan BEFORE|AFTER removing more than 1 pKa or pKaH per molecule: ' + str(len(morgan_)) + '|' + str(len(morgan)))
 
-comp_ab_ = pd.read_csv('/scratch/cii2002/pka/NEW_TRAINING_DATA/DATA_JUNE_24_2025/data/pubchem_molecules_123_oct_20_2025.csv')
+comp_ab_ = pd.read_csv('data/pubchem_molecules_123_oct_20_2025.csv')
 comp_ab_['Activity Comment'] = comp_ab_['Activity Comment'].replace({'Acidic pKa': 'acidic','Basic pKa' : 'basic'})
 comp_ab = comp_ab_.rename(columns={'SMILES':'smiles','pKa experimental':'target','Marvin Ionized SMILES':'ionized smiles','Activity Comment':'prefix'})
 comp_ab['micropka input'] = (comp_ab['micropka input'].astype(str).apply(canonicalize_micropka_pair))
@@ -547,14 +547,14 @@ print('# of molecules in Comparison of Acids and Bases BEFORE|AFTER removing mor
 collect_all_pKa_pKaH = pd.concat([duplicates_az, duplicates_comp9, duplicates_comp_ab, duplicates_vertex, duplicates_morgan, duplicates_manchester], axis=0)
 
 # import iupac but do not add it to the rest of the datasets; will not be for training 
-iupac = pd.read_csv('/scratch/cii2002/pka/iupac/macropka_with_monoprotic_molecules_only.csv')
+iupac = pd.read_csv('data/iupac_macropka_with_monoprotic_molecules_only.csv')
 iupac[['prefix','smiles']] = iupac['prefix_smiles'].str.split(':',expand=True)
 iupac['citation']= ['IUPAC' for i in range(len(iupac))]
 iupac = mol_and_fp(iupac, 'smiles')
 iupac['canonical smiles'] = [Chem.MolToSmiles(Chem.MolFromSmiles(i), canonical=True) for i in iupac['smiles']]
 
 # import D2A-pKa data
-d2a = pd.read_csv('/scratch/cii2002/solvation_free_energies_data/D2A-pKa.csv')
+d2a = pd.read_csv('data/D2A-pKa.csv')
 #get only the pka extracted using water solvent 
 d2a_oxygen = d2a[d2a['solvent_smiles'] == 'O'].copy()
 # apply acidic or basic prefix to go with other datasets; will be removed later 
@@ -1163,26 +1163,26 @@ else:
 # filter out any molecules from test set 
 print('================================== FILTERING STEP: removing any molecules seen in external test sets ====================================')
 print('= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =')
-nov_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/Novartis/test.source', names=['reaction_smiles'])
-nov_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/Novartis/test.target', names=['target'])
+nov_s = pd.read_csv('data/Novartis/test.source', names=['reaction_smiles'])
+nov_t = pd.read_csv('data/Novartis/test.target', names=['target'])
 nov = pd.concat([nov_s, nov_t], axis=1)
-lit_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/Literature/test.source', names=['reaction_smiles'])
-lit_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/Literature/test.target', names=['target'])
+lit_s = pd.read_csv('data/Literature/test.source', names=['reaction_smiles'])
+lit_t = pd.read_csv('data/Literature/test.target', names=['target'])
 lit = pd.concat([lit_s, lit_t], axis=1)
-sam6_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6/test.source', names=['reaction_smiles'])
-sam6_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6/test.target', names=['target'])
+sam6_s = pd.read_csv('data/SAMPL6/test.source', names=['reaction_smiles'])
+sam6_t = pd.read_csv('data/SAMPL6/test.target', names=['target'])
 sam6 = pd.concat([sam6_s, sam6_t], axis=1)
-sam6_taut_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6_DEC_10_2025/test.source', names=['reaction_smiles'])
-sam6_taut_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6_DEC_10_2025/test.target', names=['target'])
+sam6_taut_s = pd.read_csv('data/SAMPL6_DEC_10_2025/test.source', names=['reaction_smiles'])
+sam6_taut_t = pd.read_csv('data/SAMPL6_DEC_10_2025/test.target', names=['target'])
 sam6_taut = pd.concat([sam6_taut_s, sam6_taut_t], axis=1)
-sam6_s_31 = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6/31_molecules/test.source', names=['reaction_smiles'])
-sam6_t_31 = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL6/31_molecules/test.target', names=['target'])
+sam6_s_31 = pd.read_csv('data/SAMPL6/31_molecules/test.source', names=['reaction_smiles'])
+sam6_t_31 = pd.read_csv('data/SAMPL6/31_molecules/test.target', names=['target'])
 sam6_31 = pd.concat([sam6_s_31, sam6_t_31], axis=1)
-sam7_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL7/test.source', names=['reaction_smiles'])
-sam7_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL7/test.target', names=['target'])
+sam7_s = pd.read_csv('data/SAMPL7/test.source', names=['reaction_smiles'])
+sam7_t = pd.read_csv('data/SAMPL7/test.target', names=['target'])
 sam7 = pd.concat([sam7_s, sam7_t], axis=1)
-sam8_s = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL8/test.source', names=['reaction_smiles'])
-sam8_t = pd.read_csv('/scratch/cii2002/pka/NEW_EXTERNAL_TEST/REGRESSION/prot_to_deprot_pairs/SAMPL8/test.target', names=['target'])
+sam8_s = pd.read_csv('data/SAMPL8/test.source', names=['reaction_smiles'])
+sam8_t = pd.read_csv('data/SAMPL8/test.target', names=['target'])
 sam8 = pd.concat([sam8_s, sam8_t], axis=1)
 external = pd.concat([nov, lit, sam6, sam6_taut, sam6_31, sam7, sam8], axis=0)
 external['prefix'] = external['reaction_smiles'].apply(classify_reaction)
