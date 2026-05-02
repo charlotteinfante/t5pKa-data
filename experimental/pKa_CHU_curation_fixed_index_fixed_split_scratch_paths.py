@@ -1804,6 +1804,7 @@ test_aa  = ['Asp','His','Tyr',                    # 3‑pKa ➔ test
             'Phe','Pro','Ser','Thr','Trp','Val']  # 2‑pKa ➔ test
 
 # add 3-letter code name to df_filtered
+df_filtered = df_filtered.reset_index(drop=True)
 df = (df_filtered.merge(aa_df[['micropka input','Name']], on='micropka input',how='left'))
 df['first'] = [x.split('>>')[0] for x in df['micropka input']]
 df['second'] = [x.split('>>')[-1] for x in df['micropka input']]
