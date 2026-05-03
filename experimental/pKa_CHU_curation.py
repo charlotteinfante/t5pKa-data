@@ -564,6 +564,15 @@ d2a_oxygen = mol_and_fp(d2a_oxygen, 'protonated')
 d2a_oxygen['canonical smiles'] = [Chem.MolToSmiles(Chem.MolFromSmiles(i), canonical=True) for i in d2a_oxygen['protonated']]
 d2a_oxygen_ = d2a_oxygen.rename(columns={'refs': 'citation','pKa_avg':'target','reaction_smiles':'micropka input'})
 d2a_oxygen_['micropka input'] = (d2a_oxygen_['micropka input'].astype(str).apply(canonicalize_micropka_pair))
+# fill in D2A-pKa rows whose original `refs` field is an empty list with a placeholder citation
+def _fill_uncited_d2a(val):
+    if isinstance(val, list):
+        return val if len(val) > 0 else ['D2A-pKa (uncited)']
+    s = str(val).strip()
+    if s in ('', '[]', 'nan', 'None'):
+        return "['D2A-pKa (uncited)']"
+    return val
+d2a_oxygen_['citation'] = d2a_oxygen_['citation'].apply(_fill_uncited_d2a)
 
 # combine only the external test sets from epik paper and Settimo et al. and amino acids 
 combined_prefix = pd.concat([comp_9['prefix'], az['prefix'], manchester['prefix'], vertex['prefix'], morgan['prefix'], comp_ab['prefix'], aa_df['prefix']], axis=0)
@@ -915,7 +924,6 @@ reaxys_df = reaxys_df.assign(pKas=new_pkas, average=new_avgs, **{'mean absolute 
 reaxys_df = reaxys_df.loc[
     reaxys_df['mean absolute error'] <= 0.25
 ].reset_index(drop=True) # keep only the molecules with mean absolute error of less than 0.25
-
 # update the copy of together_average_pkas with the new citations and averages based on what was gathered in Reaxys
 cols = ['pKas','citations','mean absolute error']
 _together_average_pkas.loc[reaxys_df['i'], cols] = (reaxys_df.set_index('i')[cols].loc[_together_average_pkas.index.intersection(reaxys_df['i']), cols])
@@ -1147,14 +1155,14 @@ print(str(len(reliable_d2a)) + ' pKas from D2A-pKa can be added to our trainable
 unreliable_d2a = d2a_oxygen_[d2a_oxygen_['pka_vals'].apply(lambda lst: len(lst) > 1)] # do NOT add to data 
 
 # add reliable_d2a to new_data 
-add_d2a = input("Would you like to add the reliable molecules from D2A-pKa to the dataset? (Y/N): ").strip().upper() # ask user if they want to add D2A-pKa data 
-if add_d2a == 'Y':
+# add_d2a = input("Would you like to add the reliable molecules from D2A-pKa to the dataset? (Y/N): ").strip().upper() # ask user if they want to add D2A-pKa data 
+if True:
     reliable_d2a = reliable_d2a.rename(columns={'pka_vals':'pKas','target':'average'})
     reliable_d2a['mean absolute error'] = [np.nan for i in range(len(reliable_d2a))]
     reliable_d2a['absolute difference'] = [np.nan for i in range(len(reliable_d2a))]
     reliable_d2a['Tanimoto'] = [np.nan for i in range(len(reliable_d2a))]
     reliable_d2a['canonical smiles'] = [Chem.MolToSmiles(Chem.MolFromSmiles(i), canonical=True) for i in reliable_d2a['protonated']]
-    new_data_ = pd.concat([new_data, reliable_d2a], axis=0)
+    new_data_ = pd.concat([new_data, reliable_d2a], axis=0, ignore_index=True)
     print(str(len(new_data_)) + ' length of data BEFORE filtering out external test set molecules')
 else:
     new_data_ = new_data.copy()
@@ -1197,7 +1205,7 @@ external['canonical smiles'] = [Chem.MolToSmiles(Chem.MolFromSmiles(i), canonica
 # specific ionization event the training row represents.
 # ============================================================
 
-breakpoint()
+#breakpoint()
 
 external = external.reset_index(drop=True)
 new_data_ = new_data_.reset_index(drop=True)
@@ -1268,7 +1276,7 @@ new_data_ = new_data_filtered.copy()
 new_data_ = new_data_.reset_index(drop=True)
 
 
-breakpoint()
+#breakpoint()
 
 
 def parent_inchikey(smi):
@@ -1308,8 +1316,6 @@ print(f"Parent-molecule filter (Option B): "
 
 testing_df_for_now = df_filtered.copy()
 
-breakpoint()  # — leaving in your existing breakpoint here if you want it
-
 # Replace lines 1181–1185 with: OLD WAY OPTION A
 #new_data_["pair_key"] = new_data_["micropka input"].apply(canonicalize_micropka_pair)
 #external["pair_key"]  = external["reaction_smiles"].apply(canonicalize_micropka_pair)
@@ -1327,7 +1333,6 @@ breakpoint()  # — leaving in your existing breakpoint here if you want it
 #df_filtered = new_data_[~new_data_["key"].isin(test_keys)].copy()
 #df_filtered = df_filtered.drop(columns=["key"])
 #testing_df_for_now = df_filtered.copy()
-
 
 # filter out based on tanitomo similarity
 def mol_from_smiles(s):
@@ -1457,6 +1462,10 @@ def tanimoto_overlap_check_all(
     train_matches_df : pd.DataFrame
         Unique training rows that should be dropped.
     """
+
+    # Keep train_index labels one-to-one with rows. Later .loc/.drop(index=...)
+    # use these labels, so duplicate indexes would drop unrelated rows.
+    train_df = train_df.reset_index(drop=True).copy()
 
     # ----------------------------
     # Build standardized training fingerprints
@@ -1610,7 +1619,7 @@ print("============================================================")
 
 # Optional debugging columns
 external = external.copy()
-df_filtered = df_filtered.copy()
+df_filtered = df_filtered.reset_index(drop=True).copy()
 
 external["parent_smiles_for_tanimoto"] = external["canonical smiles"].apply(mol_to_parent_smiles)
 df_filtered["parent_smiles_for_tanimoto"] = df_filtered["canonical smiles"].apply(mol_to_parent_smiles)
@@ -1789,6 +1798,7 @@ test_aa  = ['Asp','His','Tyr',                    # 3‑pKa ➔ test
             'Phe','Pro','Ser','Thr','Trp','Val']  # 2‑pKa ➔ test
 
 # add 3-letter code name to df_filtered
+df_filtered = df_filtered.reset_index(drop=True)
 df = (df_filtered.merge(aa_df[['micropka input','Name']], on='micropka input',how='left'))
 df['first'] = [x.split('>>')[0] for x in df['micropka input']]
 df['second'] = [x.split('>>')[-1] for x in df['micropka input']]
@@ -1891,10 +1901,15 @@ val_size = len(val)
 test_size = len(test) 
 
 # get averages; they will all be put into test set 
-average_groups   = set(df.loc[df['Tanimoto'].notna(), 'group_id'])
+#average_groups   = set(df.loc[df['Tanimoto'].notna(), 'group_id'])
+average_groups = set(
+    df.loc[df['citation'].apply(lambda x: isinstance(x, (list, tuple)) and len(x) > 1),
+           'group_id']
+)
 train_aa_groups  = set(df.loc[df['Name'].isin(train_aa), 'group_id'])
 test_aa_groups   = set(df.loc[df['Name'].isin(test_aa),  'group_id'])
-print('Number of averages in data: ' + str(len(average_groups)))
+#print('Number of averages in data: ' + str(len(average_groups)))
+print('Number of multi-pKa groups forced into test: ' + str(len(average_groups)))
 
 rng = np.random.default_rng(42)
 
@@ -2083,9 +2098,8 @@ folds = kfold_groups_indices(result['group_id'], n_splits=5, seed=42)
 
 # save files 
 while True:
-    question = input("Do you want to save the split data? (Y/N): ").strip().upper()
-    if question == 'Y':
-        path = input('Input path of where you want the files to be saved: ').strip()
+    if True:
+        path = "output_pka_chu_creation/"
         # ensure the directory exists
         os.makedirs(path, exist_ok=True)
 
@@ -2137,12 +2151,14 @@ while True:
         print(f"All files written to {path}")
         break
 
-    elif question == 'N':
-        print("Skipping save.")
-        break
+    
+
+    #elif question == 'N':
+    #    print("Skipping save.")
+    #    break
 
     else:
         print("Please type 'Y' or 'N'.")  
 
-breakpoint()
+#breakpoint()
 print('END OF SCRIPT')
